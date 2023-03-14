@@ -1,6 +1,7 @@
 import json
 import os
 INVALID = "-1"
+clear = lambda: os.system('clear')
 class Board:
 
     def __init__(self):
@@ -35,13 +36,39 @@ class Board:
             if self._validate_block(block) is False:
                 return False
         return True
+
+    def find_empty(self):
+        for x in range(1, 10):
+            for y in range(1, 10):
+                value = self._get_cell(x, y)['value']
+                if value is INVALID:
+                    return (x, y)
+        return None
+
+
+    def brute_force_solve(self):
+        find = self.find_empty()
+        if not find:
+            return True
+        else:
+            x, y = find
+        value = self._get_cell(x, y)['value']
+        for i in range(1, 10):
+            self.fill(x, y, i)
+            clear()
+            self.console_print()
+            if self.validate() is True:
+                if self.brute_force_solve():
+                    return True
+            self.fill(x, y, INVALID)
+        return False
     def __str__(self):
         return json.dumps(self.board, ensure_ascii=False, indent=4)
 
     def _set_cell(self, x, y, value, initial = "False"):
         for cell in self.board:
             if cell['x'] == x and cell['y'] == y:
-                if cell['initial'] is not "True":
+                if cell['initial'] != "True":
                     cell['value'] = f'{value}'
                     cell['initial'] = initial
                     return True
@@ -105,7 +132,7 @@ class Board:
                 else:
                     str += " "
                 if y == 9:
-                    str += x.__str__()
+                    str += " " + x.__str__()
             if x%3 == 0:
                 str += "\n   -----------------\n"
             else:
@@ -121,35 +148,47 @@ class Board:
         return block
 def main():
     board = Board()
+    board.fill(1,1,"2", "True")
+    board.fill(1,3,"3", "True")
     board.fill(1,4,"6", "True")
-    board.fill(1,5,"2", "True")
-    board.fill(2,3,"9", "True")
-    board.fill(2,8,"4", "True")
-    board.fill(3,1,"7", "True")
-    board.fill(3,3,"6", "True")
-    board.fill(3,7,"8", "True")
-    board.fill(3,9,"5", "True")
-    board.fill(4,1,"1", "True")
-    board.fill(4,6,"5", "True")
-    board.fill(4,9,"2", "True")
-    board.fill(5,3,"5", "True")
-    board.fill(5,7,"7", "True")
-    board.fill(6,2,"4", "True")
-    board.fill(6,4,"3", "True")
-    board.fill(6,6,"1", "True")
-    board.fill(7,5,"4", "True")
-    board.fill(8,1,"8", "True")
-    board.fill(8,3,"2", "True")
-    board.fill(8,4,"5", "True")
-    board.fill(8,5,"6", "True")
-    board.fill(8,7,"4", "True")
-    board.fill(9,6,"2", "True")
-    board.fill(9,8,"8", "True")
-    board.fill(9,8,"8", "True")
-    board.validate()
+    board.fill(1,5,"5", "True")
+    board.fill(1,7,"7", "True")
 
-    clear = lambda: os.system('clear')
-    clear()
+    board.fill(2,3,"8", "True")
+    board.fill(2,5,"2", "True")
+    board.fill(2,6,"7", "True")
+    board.fill(2,8,"3", "True")
+
+    board.fill(3,2,"5", "True")
+    board.fill(3,3,"7", "True")
+    board.fill(3,9,"4", "True")
+
+    board.fill(4,1,"8", "True")
+    board.fill(4,9,"2", "True")
+
+    board.fill(5,1,"3", "True")
+    board.fill(5,2,"9", "True")
+    board.fill(5,4,"8", "True")
+    board.fill(5,7,"4", "True")
+
+    board.fill(6,1,"4", "True")
+    board.fill(6,3,"6", "True")
+    board.fill(6,5,"1", "True")
+
+    board.fill(7,5,"9", "True")
+    board.fill(7,8,"1", "True")
+
+    board.fill(8,7,"8", "True")
+    board.fill(8,9,"5", "True")
+
+    board.fill(9,2,"3", "True")
+    board.fill(9,3,"2", "True")
+    board.fill(9,4,"7", "True")
+    board.fill(9,5,"8", "True")
+    board.fill(9,7,"6", "True")
+
+
+    board.validate()
     valid = True 
     while board.not_solved():
         if not valid:
