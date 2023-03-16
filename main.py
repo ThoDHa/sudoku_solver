@@ -1,48 +1,54 @@
 import json
 import os
+import time
+import math
+
 INVALID = "-1"
+
 clear = lambda: os.system('clear')
+
 class Board:
 
-    def __init__(self):
+    def __init__(self, size):
         self.board = []
+        self.size = size + 1;
+        self.square_root = math.sqrt(size)
 
-        for x in range(1, 10):
-            for y in range(1, 10):
-                self.board.append({"x": x, "y": y, "value": INVALID, "hints": [], "initial": "False"})
-    def fill(self, x, y, value, initial="False"):
-        assert 0 < x <= 9, "invalid row value"
-        assert 0 < y <= 9, "invalid column value"
+        for row in range(1, self.size):
+            for column in range(1, self.size):
+                self.board.append({"row": row, "column" : column, "value": INVALID, "hints": [], "initial": "False"})
+
+    def fill(self, row, column, value, initial="False"):
+        assert 0 < row <= 9, "invalid row value"
+        assert 0 < column <= 9, "invalid column value"
         assert 0 < int(value) <= 9 or int(value) == -1, "invalid value"
-        return self._set_cell(x, y, value, initial)
+        return self._set_cell(row, column, value, initial)
 
     def not_solved(self):
-        for x in range(1, 10):
-            for y in range(1, 10):
-                value = self._get_cell(x, y)['value']
+        for row in range(1, self.size):
+            for column in range(1, self.size):
+                value = self._get_cell(row, column)['value']
                 if value is INVALID:
                     return True
         return False
 
     def validate(self):
-        for x in range(1, 10):
-            if self._validate_row(x) is False:
+        for row in range(1, self.size):
+            if self._validate_row(row) is False:
                 return False 
-        for y in range(1, 10):
-            if self._validate_column(y) is False:
+        for column in range(1, self.size):
+            if self._validate_column(column) is False:
                 return False 
     
-        for block in range(1, 10):
+        for block in range(1, self.size):
             if self._validate_block(block) is False:
                 return False
         return True
 
     def find_empty(self):
-        for x in range(1, 10):
-            for y in range(1, 10):
-                value = self._get_cell(x, y)['value']
-                if value is INVALID:
-                    return (x, y)
+        for cell in self.board:
+            if cell['value'] == INVALID:
+                return cell['row'], cell['column']
         return None
 
 
@@ -51,23 +57,25 @@ class Board:
         if not find:
             return True
         else:
-            x, y = find
-        value = self._get_cell(x, y)['value']
-        for i in range(1, 10):
-            self.fill(x, y, i)
-            clear()
-            self.console_print()
+            row, column = find
+
+        value = self._get_cell(row, column)['value']
+
+        for i in range(1, self.size):
+            self.fill(row, column, i)
+#            time.sleep(30/1000)
             if self.validate() is True:
                 if self.brute_force_solve():
                     return True
-            self.fill(x, y, INVALID)
+            self.fill(row, column, INVALID)
         return False
+
     def __str__(self):
         return json.dumps(self.board, ensure_ascii=False, indent=4)
 
     def _set_cell(self, x, y, value, initial = "False"):
         for cell in self.board:
-            if cell['x'] == x and cell['y'] == y:
+            if cell["row"] == x and cell["column"] == y:
                 if cell['initial'] != "True":
                     cell['value'] = f'{value}'
                     cell['initial'] = initial
@@ -77,13 +85,13 @@ class Board:
 
     def _get_cell(self, x, y):
         for cell in self.board:
-            if cell['x'] == x and cell['y'] == y:
+            if cell["row"] == x and cell["column"] == y:
                 return cell
 
-    def _validate_row(self, x):
+    def _validate_row(self, row):
         answers = []
-        for y in range(1, 10):
-            value = self._get_cell(x, y)['value']
+        for column in range(1, self.size):
+            value = self._get_cell(row, column)['value']
             if value is not INVALID:
                 if value in answers:
                     return False
@@ -91,10 +99,10 @@ class Board:
                     answers.append(value)
         return True
 
-    def _validate_column(self, y):
+    def _validate_column(self, column):
         answers = []
-        for x in range(1, 10):
-            value = self._get_cell(x, y)['value']
+        for row in range(1, self.size):
+            value = self._get_cell(row, column)['value']
             if value is not INVALID:
                 if value in answers:
                     return False
@@ -104,10 +112,10 @@ class Board:
 
     def _validate_block(self, block):
         answers = []
-        for x in range(1, 10):
-            for y in range(1, 10):
-                if self._get_block(x, y) is block:
-                    value = self._get_cell(x, y)['value']
+        for row in range(1, self.size):
+            for column in range(1, self.size):
+                if self._get_block(row, column) is block:
+                    value = self._get_cell(row, column)['value']
                     if value is not INVALID:
                         if value in answers:
                             return False
@@ -116,38 +124,54 @@ class Board:
         return True
 
     def console_print(self):
-        str = "   1 2 3 4 5 6 7 8 9\n"
-        str += "   -----------------\n"
-        for x in range(1, 10):
-            str += x.__str__() + " |"
-            for y in range(1, 10):
-                value = self._get_cell(x, y)['value']
+        str = "   "
+        for row in range(1, self.size):
+            str += f'{row}' + " "
+
+        str += "\n  "
+        for i in range(1, self.size*2):
+            str += "-"
+
+        str += "\n"
+        for row in range(1, self.size):
+            str += row.__str__() + " |"
+            for column in range(1, self.size):
+                value = self._get_cell(row, column)['value']
                 if value == INVALID:
                     str += "-"
                 else:
                     str += value
 
-                if y%3 == 0:
+                if column%self.square_root == 0:
                     str += "|"
                 else:
                     str += " "
-                if y == 9:
-                    str += " " + x.__str__()
-            if x%3 == 0:
-                str += "\n   -----------------\n"
+                if column == (self.size -1):
+                    str += " " + f'{row}'
+            if row%self.square_root == 0:
+                str += "\n"
+                str += "  "
+                for i in range(1, self.size*2):
+                    str += "-"
+                str += "\n"
             else:
                 str += "\n"
 
-        str += "   1 2 3 4 5 6 7 8 9\n"
+        str += "   "
+        for row in range(1, self.size):
+            str += f'{row}' + " "
+        str += "\n"
+
         print(str)                
 
     def _get_block(self, x, y):
-        row = (x-1)//3
-        column = (y-1)//3
-        block = (row * 3) + column +1
+        row = (x-1)//self.square_root
+        column = (y-1)//self.square_root
+        block = (row * self.square_root) + column +1
         return block
+
 def main():
-    board = Board()
+    board = Board(9)
     board.fill(1,1,"2", "True")
     board.fill(1,3,"3", "True")
     board.fill(1,4,"6", "True")
@@ -187,22 +211,23 @@ def main():
     board.fill(9,5,"8", "True")
     board.fill(9,7,"6", "True")
 
-
     board.validate()
-    valid = True 
-    while board.not_solved():
-        if not valid:
-            print("Last Entry Was not a valid Entry")
-        else:
-            print("")
+    board.brute_force_solve()
+    board.console_print()
+    #valid = True 
+    #while board.not_solved():
+    #    if not valid:
+    #        print("Last Entry Was not a valid Entry")
+    #    else:
+    #        print("")
 
-        board.console_print()
-        x = input("Input Row: ")
-        y = input("Input Column: ")
-        value = input("Input Value: ")
-        board.fill(int(x), int(y), f'{value}')
-        valid = board.validate() 
-        if not valid:
-            board.fill(int(x), int(y), INVALID)
-        clear()
+    #    board.console_print()
+    #    x = input("Input Row: ")
+    #    y = input("Input Column: ")
+    #    value = input("Input Value: ")
+    #    board.fill(int(x), int(y), f'{value}')
+    #    valid = board.validate() 
+    #    if not valid:
+    #        board.fill(int(x), int(y), INVALID)
+    #    clear()
 main()
