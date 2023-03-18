@@ -2,13 +2,14 @@
 """
 import os
 
-from sudoku import Sudoku
+from sudoku import sudoku
 
+def clear():
+    """ Clears the console
+    """
+    os.system('clear')
 
-clear = os.system('clear')
-
-
-board = Sudoku.Puzzle(9)
+board = sudoku.Puzzle(9)
 board.fill(1,1,2, True)
 board.fill(1,3,3, True)
 board.fill(1,4,6, True)

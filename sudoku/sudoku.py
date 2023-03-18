@@ -1,4 +1,4 @@
-"""Sudoku.py
+"""sudoku.py
 This is the base file for the Sudoku puzzle.
 """
 
