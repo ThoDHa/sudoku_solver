@@ -11,7 +11,11 @@ class Puzzle:
     """
 
     INVALID = -1
-
+    ROW = "row"
+    COLUMN = "column"
+    VALUE = "value"
+    HINTS = "hints"
+    INITIAL = "Initial"
     def __init__(self, size : int):
         """This is to initalize the class,
         
@@ -25,11 +29,11 @@ class Puzzle:
         for row in range(1, self.size):
             for column in range(1, self.size):
                 self.board.append(
-                        {"row": row,
-                         "column" : column, 
-                         "value": self.INVALID, 
-                         "hints": [], 
-                         "initial": False
+                        {self.ROW: row,
+                         self.COLUMN : column, 
+                         self.VALUE: self.INVALID, 
+                         self.HINTS: [], 
+                         self.INITIAL: False
                          }
                         )
 
@@ -49,12 +53,73 @@ class Puzzle:
         assert 0 < value <= self.size or value == -1, "invalid value"
         return self._set_cell(row, column, value, initial)
 
-    def not_solved(self):
+    def add_hint(self, row: int, column: int, value: int):
+        """ Add hints to the cell. Returns True if the hint was successfully set, otherwise
+            returns False
+        Keyword Arugments:
+            row (int): The row of the cell to set.
+            column (int): The column of the cell to set.
+            value (int): The value to set for the cell.
+                         Starter cells cannot be deleted
+        """
+
+        assert 0 < row <= self.size, "invalid row value"
+        assert 0 < column <= self.size, "invalid column value"
+        assert 0 < value <= self.size or value == -1, "invalid value"
+        cell = self._get_cell(row, column)
+
+        if cell[self.VALUE] == self.INVALID and cell[self.INITIAL] is False:
+            if value not in cell[self.HINTS]:
+                cell[self.HINTS].append(value)
+            return True
+        return False
+
+    def remove_hint(self, row: int, column: int, value: int):
+        """ Remove hint from a cell. Returns True if the hint was successfully removed, otherwise
+            returns False
+        Keyword Arugments:
+            row (int): The row of the cell to set.
+            column (int): The column of the cell to set.
+            value (int): The value to set for the cell.
+            initial (bool) default: False: When set to true, this means this cell is a starter cell.
+                                    Starter cells cannot be deleted
+        """
+
+        assert 0 < row <= self.size, "invalid row value"
+        assert 0 < column <= self.size, "invalid column value"
+        assert 0 < value <= self.size or value == -1, "invalid value"
+        cell = self._get_cell(row, column)
+
+        if cell[self.VALUE] == self.INVALID and cell[self.INITIAL] is False:
+            if value in cell[self.HINTS]:
+                cell[self.HINTS].remove(value)
+            return True
+        return False
+
+    def get_hints(self, row: int, column: int):
+        """ Get hints for cell. Returns the hints if found, otherwise returns empty list
+        Keyword Arugments:
+            row (int): The row of the cell to set.
+            column (int): The column of the cell to set.
+            value (int): The value to set for the cell.
+            initial (bool) default: False: When set to true, this means this cell is a starter cell.
+                                    Starter cells cannot be deleted
+        """
+
+        assert 0 < row <= self.size, "invalid row value"
+        assert 0 < column <= self.size, "invalid column value"
+        cell = self._get_cell(row, column)
+
+        if cell[self.VALUE] == self.INVALID and cell[self.INITIAL] is False:
+            return cell[self.HINTS]
+        return []
+
+    def solved(self):
         """ Returns True if the puzzle has been solved, False Otherwise
         """
         if self.find_empty() is None:
-            return True
-        return False
+            return False 
+        return True 
 
     def validate(self):
         """ Returns False if the puzzle is invalid, otherwise returns True 
@@ -77,7 +142,7 @@ class Puzzle:
         """
         for cell in self.board:
             if cell['value'] == self.INVALID:
-                return cell['row'], cell['column']
+                return cell[self.ROW], cell[self.COLUMN]
         return None
 
 
@@ -91,7 +156,6 @@ class Puzzle:
 
         for i in range(1, self.size):
             self.fill(row, column, i)
-#            time.sleep(30/1000)
             if self.validate() is True:
                 if self.brute_force_solve():
                     return True
@@ -118,14 +182,15 @@ class Puzzle:
         assert 0 < column <= self.size, "invalid column value"
 
         for cell in self.board:
-            if cell["row"] == row and cell["column"] == column:
-                if cell['initial'] is not True:
-                    cell['value'] = value
-                    cell['initial'] = initial
+            if cell[self.ROW] == row and cell[self.COLUMN] == column:
+                if cell[self.INITIAL] is not True:
+                    cell[self.VALUE] = value
+                    cell[self.INITIAL] = initial
                     return True
                 return False
 
         return False
+
     def _get_cell(self, row: int, column: int):
         """ Internal function to get the cell given the row and column.
             If you can find the Cell then return the cell, otherwise return None
@@ -138,11 +203,12 @@ class Puzzle:
         assert 0 < column <= self.size, "invalid column value"
 
         for cell in self.board:
-            if cell["row"] == row and cell["column"] == column:
+            if cell[self.ROW] == row and cell[self.COLUMN] == column:
                 return cell
 
         # Should never get here...
         return self.board[1][1]
+
     def _validate_row(self, row: int):
         """ Internal function to validate the given row in the puzzle. Returns False if invalid
             othwerise return True
@@ -152,7 +218,7 @@ class Puzzle:
         """
         answers = []
         for column in range(1, self.size):
-            value = self._get_cell(row, column)['value']
+            value = self._get_cell(row, column)[self.VALUE]
             if value is not self.INVALID:
                 if value in answers:
                     return False
@@ -169,7 +235,7 @@ class Puzzle:
 
         answers = []
         for row in range(1, self.size):
-            value = self._get_cell(row, column)['value']
+            value = self._get_cell(row, column)[self.VALUE]
             if value is not self.INVALID:
                 if value in answers:
                     return False
@@ -185,8 +251,8 @@ class Puzzle:
         """
         answers = []
         for cell in self.board:
-            if self._get_block(cell['row'], cell['column']) is block:
-                value = cell['value']
+            if self._get_block(cell[self.ROW], cell[self.COLUMN]) is block:
+                value = cell[self.VALUE]
                 if value is not self.INVALID:
                     if value in answers:
                         return False
@@ -208,7 +274,7 @@ class Puzzle:
         for row in range(1, self.size):
             output += f'{row}' + " |"
             for column in range(1, self.size):
-                value = self._get_cell(row, column)['value']
+                value = self._get_cell(row, column)[self.VALUE]
                 if value == self.INVALID:
                     output += "-"
                 else:
