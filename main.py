@@ -60,11 +60,8 @@ def main():
 #board.remove_hint(1,2,1)
 #print(board.get_hints(1,2))
     valid = True
+    print("")
     while board.solved():
-        if valid:
-            print("Last Entry Was not a valid Entry")
-        else:
-            print("")
 
         board.pretty_print()
         row = input("Input Row: ")
@@ -72,7 +69,10 @@ def main():
         value = input("Input Value: ")
         board.fill(int(row), int(column), int(value))
         valid = board.validate()
-        if valid:
-            board.fill(int(row), int(column), board.INVALID)
         clear()
+        if not valid:
+            print("Last Entry Was not a valid Entry")
+            board.fill(int(row), int(column), board.INVALID)
+        else:
+            print("")
 main()
