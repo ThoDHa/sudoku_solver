@@ -30,9 +30,9 @@ class Puzzle:
             for column in range(1, self.size):
                 self.board.append(
                         {self.ROW: row,
-                         self.COLUMN : column, 
-                         self.VALUE: self.INVALID, 
-                         self.HINTS: [], 
+                         self.COLUMN : column,
+                         self.VALUE: self.INVALID,
+                         self.HINTS: [],
                          self.INITIAL: False
                          }
                         )
