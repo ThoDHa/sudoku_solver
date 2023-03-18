@@ -112,15 +112,13 @@ class Board:
 
     def _validate_block(self, block):
         answers = []
-        for row in range(1, self.size):
-            for column in range(1, self.size):
-                if self._get_block(row, column) is block:
-                    value = self._get_cell(row, column)['value']
-                    if value is not INVALID:
-                        if value in answers:
-                            return False
-                        else:
-                            answers.append(value)
+        for cell in self.board:
+            if self._get_block(cell['row'], cell['column']) is block:
+                value = cell['value']
+                if value is not INVALID:
+                    if value in answers:
+                        return False
+                    answers.append(value)
         return True
 
     def console_print(self):
