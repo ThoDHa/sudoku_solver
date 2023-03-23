@@ -118,8 +118,8 @@ class Puzzle:
         """ Returns True if the puzzle has been solved, False Otherwise
         """
         if self.find_empty() is None:
-            return False 
-        return True 
+            return False
+        return True
 
     def validate(self):
         """ Returns False if the puzzle is invalid, otherwise returns True 
@@ -207,7 +207,7 @@ class Puzzle:
                 return cell
 
         # Should never get here...
-        return self.board[1][1]
+        assert False, "Why do we get here?"
 
     def _validate_row(self, row: int):
         """ Internal function to validate the given row in the puzzle. Returns False if invalid
