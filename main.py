@@ -11,7 +11,7 @@ def clear():
     os.system('clear')
 
 def create_puzzle():
-    """ Create the board and return bakc the object
+    """ Create the board and return back the object
     """
     puzzle = sudoku.Puzzle(9)
     puzzle.fill(1,1,2, True)
@@ -77,10 +77,10 @@ def console_game(puzzle):
 def main():
     """ main function
     """
-    puzzle = create_puzzle()
-    before = datetime.now()
-    puzzle.brute_force_solve()
-    after = datetime.now()
-    print(after - before)
+    puzzle = sudoku.Puzzle(9)
+    puzzle.generate_board()
+    puzzle.pretty_print()
+    if puzzle.validate():
+        print("It's valid")
 
 main()
