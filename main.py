@@ -80,7 +80,5 @@ def main():
     puzzle = sudoku.Puzzle(9)
     puzzle.generate_board()
     puzzle.pretty_print()
-    if puzzle.validate():
-        print("It's valid")
 
 main()

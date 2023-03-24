@@ -368,7 +368,8 @@ class Puzzle:
         """
         answers = []
         for cell in self.board:
-            if self._get_block(cell[self.ROW], cell[self.COLUMN]) is block:
+            cell_block = self._get_block(cell[self.ROW], cell[self.COLUMN])
+            if cell_block is block:
                 value = cell[self.VALUE]
                 if value is not self.INVALID:
                     if value in answers:
@@ -387,6 +388,6 @@ class Puzzle:
         Returns:
             The block the cell belongs in.
         """
-        rows = (row-1)//self.square_root
-        columns = (column-1)//self.square_root
-        block = (rows * self.square_root) + columns +1
+        rows = (row)//self.square_root
+        columns = (column)//self.square_root
+        return int((rows * self.square_root) + columns + 1)
