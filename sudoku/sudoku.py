@@ -151,14 +151,17 @@ class Puzzle:
         """
         for row in range(1, self.size):
             if self._validate_row(row) is False:
+                print("Row: " + str(row))
                 return False
 
         for column in range(1, self.size):
             if self._validate_column(column) is False:
+                print("Column: " + str(column))
                 return False
 
         for block in range(1, self.size):
             if self._validate_block(block) is False:
+                print("Block: " + str(block))
                 return False
         return True
 
@@ -243,13 +246,15 @@ class Puzzle:
         """ Generates a board with the given difficulty value. 
         """
 
-        while True:
-            print("Generating a new board")
-            self._generate_board()
-            print("Generation of board done, brute force solving the rest.")
-            self.brute_force_solve()
-            if not self.find_empty():
-                break
+        print("Generating a new board")
+        self._generate_board()
+        print("Generation of board done, brute force solving the rest.")
+        if self.validate():
+            print("The Board generated before brute force solving is not valid.")
+            return
+        self.brute_force_solve()
+        if self.find_empty():
+            print("Generated Board Not Solvable")
         if difficulty:
             pass
 
@@ -257,7 +262,7 @@ class Puzzle:
         seed_value = random.randrange(sys.maxsize)
         random.seed(seed_value)
         max_cells = (self.size-1) * (self.size-1)
-        end = max_cells*.80
+        end = max_cells*.8
         for _ in range(0, math.ceil(end)):
             while True:
                 value =  random.randint(1,self.size-1)
@@ -332,7 +337,7 @@ class Puzzle:
         answers = []
         for column in range(1, self.size):
             value = self._get_cell(row, column)[self.VALUE]
-            if value is not self.INVALID:
+            if value != self.INVALID:
                 if value in answers:
                     return False
                 answers.append(value)
@@ -351,7 +356,7 @@ class Puzzle:
         answers = []
         for row in range(1, self.size):
             value = self._get_cell(row, column)[self.VALUE]
-            if value is not self.INVALID:
+            if value != self.INVALID:
                 if value in answers:
                     return False
                 answers.append(value)
@@ -371,7 +376,7 @@ class Puzzle:
             cell_block = self._get_block(cell[self.ROW], cell[self.COLUMN])
             if cell_block is block:
                 value = cell[self.VALUE]
-                if value is not self.INVALID:
+                if value != self.INVALID:
                     if value in answers:
                         return False
                     answers.append(value)
@@ -388,6 +393,6 @@ class Puzzle:
         Returns:
             The block the cell belongs in.
         """
-        rows = (row)//self.square_root
-        columns = (column)//self.square_root
-        return int((rows * self.square_root) + columns + 1)
+        rows = (row-1)//self.square_root
+        columns = (column-1)//self.square_root
+        return int((rows * self.square_root) + columns +1)
