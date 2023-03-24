@@ -1,9 +1,6 @@
 """main.py Initial driver for the sudoku Puzzle
 """
-from ctypes import get_errno
 import os
-from datetime import datetime
-
 from sudoku import sudoku
 
 def clear():
@@ -56,6 +53,8 @@ def create_puzzle():
     return puzzle
 
 def brute_force():
+    """ Create and brute force the puzzle
+    """
     puzzle = create_puzzle()
     puzzle.pretty_print()
     puzzle.brute_force_solve()
@@ -84,9 +83,8 @@ def console_game():
 def generate_game():
     """ main function
     """
-    puzzle = sudoku.Puzzle(4)
+    puzzle = sudoku.Puzzle(9)
     puzzle.generate_board()
-    puzzle.pretty_print()
 
 def main():
     """ main function

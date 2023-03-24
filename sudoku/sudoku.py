@@ -1,11 +1,16 @@
 """sudoku.py
 This is the base file for the Sudoku puzzle.
 """
+import os
 import sys
 import json
 import math
 from enum import Enum
 import random
+def clear():
+    """ Clears the console
+    """
+    os.system('clear')
 
 class Puzzle:
     """
@@ -151,17 +156,14 @@ class Puzzle:
         """
         for row in range(1, self.size):
             if self._validate_row(row) is False:
-                print("Row: " + str(row))
                 return False
 
         for column in range(1, self.size):
             if self._validate_column(column) is False:
-                print("Column: " + str(column))
                 return False
 
         for block in range(1, self.size):
             if self._validate_block(block) is False:
-                print("Block: " + str(block))
                 return False
         return True
 
@@ -190,7 +192,7 @@ class Puzzle:
 
         for i in range(1, self.size):
             self.fill(row, column, i)
-            if self.validate() is True:
+            if self.validate():
                 if self.brute_force_solve():
                     return True
             self.fill(row, column, self.INVALID)
@@ -245,34 +247,48 @@ class Puzzle:
     def generate_board(self, difficulty: Difficulty = Difficulty.EASY):
         """ Generates a board with the given difficulty value. 
         """
-
-        print("Generating a new board")
-        self._generate_board()
-        print("Generation of board done, brute force solving the rest.")
-        if self.validate():
-            print("The Board generated before brute force solving is not valid.")
-            return
-        self.brute_force_solve()
-        if self.find_empty():
-            print("Generated Board Not Solvable")
+        while True:
+            print("Generating a new board")
+            if not self._generate_board():
+                continue
+            self.pretty_print()
+            print("Generation of board done, brute force solving the rest.")
+            assert self.validate(), ("The Board generated before brute force solving is not valid.")
+            for cell in self.board:
+                if cell[self.VALUE] != self.INVALID:
+                    cell[self.INITIAL] = True
+            self.brute_force_solve()
+            self.pretty_print()
+            if self.find_empty():
+                print("Generated Board Not Solvable")
+                for cell in self.board:
+                    cell[self.VALUE] = self.INVALID
+                    cell[self.INITIAL] = False
+                continue
+            break
         if difficulty:
             pass
+        print("WE GENERATED A VALID BOARD!")
 
     def _generate_board(self):
         seed_value = random.randrange(sys.maxsize)
         random.seed(seed_value)
-        max_cells = (self.size-1) * (self.size-1)
-        end = max_cells*.8
-        for _ in range(0, math.ceil(end)):
-            while True:
-                value =  random.randint(1,self.size-1)
-                row =  random.randint(1,self.size-1)
-                column =  random.randint(1,self.size-1)
-                self.fill(row, column, value)
-                if self.validate():
-                    self.pretty_print()
-                    break
-                self.fill(row, column, self.INVALID)
+
+        for block in range(1, self.size):
+            count = 0
+            max_count = random.randint(1,2)
+            while count < max_count:
+                row = random.randint(1, self.size-1)
+                column = random.randint(1, self.size-1)
+                value = random.randint(1, self.size-1)
+                current_block = self._get_block(row, column)
+                if current_block == block:
+                    if self.fill(row, column, value):
+                        if self.validate():
+                            count = count + 1
+                            continue
+                        self.fill(row, column, self.INVALID)
+        return True
 
     def _set_cell(self, row: int, column: int, value: int, initial: bool = False):
         """This will fill in the cell sepcified with the value.
@@ -295,9 +311,17 @@ class Puzzle:
 
         for cell in self.board:
             if cell[self.ROW] == row and cell[self.COLUMN] == column:
-                if cell[self.INITIAL] is not True:
-                    cell[self.VALUE] = value
-                    cell[self.INITIAL] = initial
+                if not cell[self.INITIAL]:
+                    # IF we are setting it to invalid then just go ahead and set it.
+                    if value == self.INVALID:
+                        cell[self.VALUE] = value
+                        cell[self.INITIAL] = initial
+                    # If the value is not invalid then we can set it.
+                    elif cell[self.VALUE] == self.INVALID:
+                        cell[self.VALUE] = value
+                        cell[self.INITIAL] = initial
+                    else:
+                        return False
                     return True
                 return False
 
