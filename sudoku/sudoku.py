@@ -7,6 +7,7 @@ import json
 import math
 from enum import Enum
 import random
+import datetime
 def clear():
     """ Clears the console
     """
@@ -31,6 +32,9 @@ class Puzzle:
         HARD = 3
         EXTREME = 4
 
+    class States:
+        GENERATING = 1
+        SOLVING = 2
     def __init__(self, size : int):
         """This is to initalize the class,
         
@@ -40,7 +44,8 @@ class Puzzle:
         self.board = []
         self.size = size + 1
         self.square_root = math.sqrt(size)
-
+        self.state = self.States.SOLVING
+        self._solution = False
         for row in range(1, self.size):
             for column in range(1, self.size):
                 self.board.append(
@@ -174,32 +179,125 @@ class Puzzle:
         return None
 
 
-    def brute_force_solve(self, count = -1) -> bool:
+    def brute_force_solve(self, first_time = None , solution = 0) -> int:
         """ Brute force solve the Puzzle
 
         Return:
             True once a solution is found, otherwise return false.
         """
+
+        # Only timeout when we are generating a solution
+        if self.state == self.States.GENERATING:
+            if not first_time:
+                first_time = datetime.datetime.now()
+            else:
+                now = datetime.datetime.now()
+                difference = now - first_time
+                if difference.seconds >= 1:
+                    return 0
+
         find = self.find_empty()
         if not find:
-            return True
+            return solution+1
         row, column = find
-        if count >= (self.size-1)*(self.size-1):
-            return True
-        if count != -1:
-            count = count + 1
+
         for i in range(1, self.size):
             self.fill(row, column, i)
             if self.validate():
-                if self.brute_force_solve(count):
-                    return True
+                count = self.brute_force_solve(first_time, solution)
+                if count != solution:
+                    return count
             self.fill(row, column, self.INVALID)
-        return False
+        return 0
+
+    def generate_board(self, difficulty: Difficulty = Difficulty.EASY):
+        """ Generates a board with the given difficulty value. 
+        """
+        self.state = self.States.GENERATING
+        seed_value = random.randrange(sys.maxsize)
+        random.seed(seed_value)
+
+        while True:
+            print("Generating a new board")
+            self._generate_board()
+            self.pretty_print()
+            print("Generation of board done, brute force solving the rest.")
+            assert self.validate(), ("The Board generated before brute force solving is not valid.")
+            self.brute_force_solve()
+            self.pretty_print()
+            if self.find_empty():
+                print("Generated Board Not Solvable")
+                for cell in self.board:
+                    cell[self.VALUE] = self.INVALID
+                    cell[self.INITIAL] = False
+                continue
+
+            remove = self._get_remove_count(difficulty)
+            for _ in range(1, remove):
+                while True:
+                    row = random.randint(1, self.size-1)
+                    column = random.randint(1, self.size-1)
+                    value = self._get_cell(row, column)
+                    if value != self.INVALID:
+                        self.fill(row, column, self.INVALID)
+                        break
+            for cell in self.board:
+                if cell[self.VALUE] != self.INVALID:
+                    cell[self.INITIAL] = True
+            if self.brute_force_solve() > 1:
+                print("The solution is not uique.")
+                continue
+            self.clear()
+            print("WE GENERATED A VALID BOARD!")
+            self.state = self.States.SOLVING
+            return
+    def clear(self):
+        """ Clear the board with the solutions.
+        """
+        for cell in self.board:
+            if not cell[self.INITIAL]:
+                cell[self.VALUE] = self.INVALID
+
+    def _generate_board(self):
+        """ Helper functiont hat will generate a board. It will make sure there is at least one
+        value in each block, and will randomly add up to three.
+        """
+        first = random.randint(1, self.size-1)
+        second = random.randint(1, self.size-1)
+        while second == first:
+            second = random.randint(1, self.size-1)
+
+        self.fill(1, 1, first)
+        self.fill(1, self.size-1, second)
+
+        for block in range(1, self.size):
+            count = 0
+            max_count = random.randint(1,math.ceil((self.size-1)*.2))
+
+            first_time = datetime.datetime.now()
+            while count < max_count:
+
+                now = datetime.datetime.now()
+                difference = now - first_time
+                if (difference.total_seconds() * 1000) >= 500:
+                    print(str(difference.total_seconds() * 1000))
+                    continue
+
+                row = random.randint(1, self.size-1)
+                column = random.randint(1, self.size-1)
+                value = random.randint(1, self.size-1)
+                current_block = self._get_block(row, column)
+                if current_block == block:
+                    if self.fill(row, column, value):
+                        if self.validate():
+                            count = count + 1
+                            continue
+                        self.fill(row, column, self.INVALID)
 
     def __str__(self):
         """ Tells stuff how to convert this class to a string 
         """
-        return json.dumps(self.board, ensure_ascii=False, indent=4)
+        return json.dumps(self.board, ensure_ascii=False)
 
     def pretty_print(self):
         """ Pretty prints the board in a CLI GUI. 
@@ -240,82 +338,6 @@ class Puzzle:
         output += "\n"
 
         print(output)
-
-    def generate_board(self, difficulty: Difficulty = Difficulty.EASY):
-        """ Generates a board with the given difficulty value. 
-        """
-        while True:
-            print("Generating a new board")
-            self._generate_board()
-            self.pretty_print()
-            print("Generation of board done, brute force solving the rest.")
-            assert self.validate(), ("The Board generated before brute force solving is not valid.")
-            self.brute_force_solve()
-            self.pretty_print()
-            if self.find_empty():
-                print("Generated Board Not Solvable")
-                for cell in self.board:
-                    cell[self.VALUE] = self.INVALID
-                    cell[self.INITIAL] = False
-                continue
-            break
-
-        remove = self.get_remove_count(difficulty)
-        for _ in range(1, remove):
-            while True:
-                row = random.randint(1, self.size-1)
-                column = random.randint(1, self.size-1)
-                value = self._get_cell(row, column)
-                if value != self.INVALID:
-                    self.fill(row, column, self.INVALID)
-                    break
-        for cell in self.board:
-            if cell[self.VALUE] != self.INVALID:
-                cell[self.INITIAL] = True
-
-        print("WE GENERATED A VALID BOARD!")
-
-    def get_remove_count(self, difficulty: Difficulty):
-        """ Get amount of cells to remove for the difficulty level
-
-        Keyword Arguments:
-            difficulty (Difficulty) -- The difficulty of the game.
-
-        Returns:
-            Returns the amount of cells to remove.
-        """
-        if difficulty == self.Difficulty.EASY:
-            remove = random.randint(20, 30)
-        elif difficulty == self.Difficulty.MEDIUM:
-            remove = random.randint(30, 40)
-        elif difficulty == self.Difficulty.HARD:
-            remove = random.randint(40, 50)
-        else:
-            remove = random.randint(50, 60)
-        return remove
-
-    def _generate_board(self):
-        """ Helper functiont hat will generate a board. It will make sure there is at least one
-        value in each block, and will randomly add up to three.
-        """
-        seed_value = random.randrange(sys.maxsize)
-        random.seed(seed_value)
-
-        self.fill(1, 1, random.randint(1, self.size-1))
-        for block in range(1, self.size):
-            count = 0
-            max_count = random.randint(1,math.ceil((self.size-1)*.2))
-            while count < max_count:
-                row = random.randint(1, self.size-1)
-                column = random.randint(1, self.size-1)
-                value = random.randint(1, self.size-1)
-                current_block = self._get_block(row, column)
-                if current_block == block:
-                    if self.fill(row, column, value):
-                        if self.validate():
-                            count = count + 1
-                            continue
-                        self.fill(row, column, self.INVALID)
 
     def _set_cell(self, row: int, column: int, value: int, initial: bool = False):
         """This will fill in the cell sepcified with the value.
@@ -446,3 +468,23 @@ class Puzzle:
         rows = (row-1)//self.square_root
         columns = (column-1)//self.square_root
         return int((rows * self.square_root) + columns +1)
+
+    def _get_remove_count(self, difficulty: Difficulty):
+        """ Get amount of cells to remove for the difficulty level
+
+        Keyword Arguments:
+            difficulty (Difficulty) -- The difficulty of the game.
+
+        Returns:
+            Returns the amount of cells to remove.
+        """
+        if difficulty == self.Difficulty.EASY:
+            remove = random.randint(20, 30)
+        elif difficulty == self.Difficulty.MEDIUM:
+            remove = random.randint(30, 40)
+        elif difficulty == self.Difficulty.HARD:
+            remove = random.randint(40, 50)
+        else:
+            remove = random.randint(50, 60)
+        return remove
+

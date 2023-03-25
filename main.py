@@ -1,6 +1,7 @@
 """main.py Initial driver for the sudoku Puzzle
 """
 import os
+import datetime
 from sudoku import sudoku
 
 def clear():
@@ -83,13 +84,32 @@ def generate_game():
     """ main function
     """
     puzzle = sudoku.Puzzle(9)
-    puzzle.generate_board(puzzle.Difficulty.MEDIUM)
+    puzzle.generate_board(puzzle.Difficulty.EXTREME)
     return puzzle
+
+def timing_test():
+    """ main function
+    """
+    times = []
+    solutions = []
+    for _ in range(1, 100):
+        first = datetime.datetime.now()
+        puzzle = sudoku.Puzzle(9)
+        puzzle.generate_board(puzzle.Difficulty.EASY)
+        now = datetime.datetime.now()
+        delta = now-first
+        times.append(f"{delta.microseconds / 1000}ms")
+        solutions.append(str(puzzle))
+
+    return times, solutions
+
+
+
 def main():
     """ main function
     """
-    puzzle = generate_game()
-    puzzle.pretty_print()
+    times, solutions = timing_test()
+    print(times)
     #console_game(puzzle)
     #brute_force()
 main()
