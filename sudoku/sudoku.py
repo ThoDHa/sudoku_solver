@@ -16,7 +16,6 @@ class Puzzle:
     """
     This is the base class class for the sudoku puzzle
     """
-
     INVALID = -1
     ROW = "row"
     COLUMN = "column"
@@ -63,7 +62,6 @@ class Puzzle:
             initial (bool) default: False: When set to true, this means this cell is a starter cell.
                                     Starter cells cannot be deleted
         """
-
         assert 0 < row <= self.size, "invalid row value"
         assert 0 < column <= self.size, "invalid column value"
         assert 0 < value <= self.size or value == -1, "invalid value"
@@ -81,7 +79,6 @@ class Puzzle:
         Return:
             True if adding the hint is successful, False otherwise.
         """
-
         assert 0 < row <= self.size, "invalid row value"
         assert 0 < column <= self.size, "invalid column value"
         assert 0 < value <= self.size or value == -1, "invalid value"
@@ -106,7 +103,6 @@ class Puzzle:
         Return:
             True if the remove is successul, False otherwise.
         """
-
         assert 0 < row <= self.size, "invalid row value"
         assert 0 < column <= self.size, "invalid column value"
         assert 0 < value <= self.size or value == -1, "invalid value"
@@ -129,7 +125,6 @@ class Puzzle:
         Return:
             An list of possible values for the cell.
         """
-
         assert 0 < row <= self.size, "invalid row value"
         assert 0 < column <= self.size, "invalid column value"
         cell = self._get_cell(row, column)
@@ -179,7 +174,7 @@ class Puzzle:
         return None
 
 
-    def brute_force_solve(self) -> bool:
+    def brute_force_solve(self, count = -1) -> bool:
         """ Brute force solve the Puzzle
 
         Return:
@@ -189,11 +184,14 @@ class Puzzle:
         if not find:
             return True
         row, column = find
-
+        if count >= (self.size-1)*(self.size-1):
+            return True
+        if count != -1:
+            count = count + 1
         for i in range(1, self.size):
             self.fill(row, column, i)
             if self.validate():
-                if self.brute_force_solve():
+                if self.brute_force_solve(count):
                     return True
             self.fill(row, column, self.INVALID)
         return False
@@ -206,7 +204,6 @@ class Puzzle:
     def pretty_print(self):
         """ Pretty prints the board in a CLI GUI. 
         """
-
         output = "   "
         for row in range(1, self.size):
             output += f'{row}' + " "
@@ -301,7 +298,6 @@ class Puzzle:
         """ Helper functiont hat will generate a board. It will make sure there is at least one
         value in each block, and will randomly add up to three.
         """
-
         seed_value = random.randrange(sys.maxsize)
         random.seed(seed_value)
 
@@ -407,7 +403,6 @@ class Puzzle:
         Return:
             True if the column is valid, False otherwise.
         """
-
         answers = []
         for row in range(1, self.size):
             value = self._get_cell(row, column)[self.VALUE]
