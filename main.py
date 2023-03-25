@@ -83,7 +83,7 @@ def generate_game():
     """ main function
     """
     puzzle = sudoku.Puzzle(9)
-    puzzle.generate_board(puzzle.Difficulty.HARD)
+    puzzle.generate_board(puzzle.Difficulty.EASY)
     return puzzle
 def main():
     """ main function

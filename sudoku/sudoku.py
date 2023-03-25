@@ -262,18 +262,8 @@ class Puzzle:
                     cell[self.INITIAL] = False
                 continue
             break
-        if difficulty:
-            pass
 
-        if difficulty == self.Difficulty.EASY:
-            remove = random.randint(20, 30)
-        elif difficulty == self.Difficulty.MEDIUM:
-            remove = random.randint(30, 40)
-        elif difficulty == self.Difficulty.HARD:
-            remove = random.randint(40, 50)
-        else:
-            remove = random.randint(50, 60)
-
+        remove = self.get_remove_count(difficulty)
         for _ in range(1, remove):
             while True:
                 row = random.randint(1, self.size-1)
@@ -287,6 +277,25 @@ class Puzzle:
                 cell[self.INITIAL] = True
 
         print("WE GENERATED A VALID BOARD!")
+
+    def get_remove_count(self, difficulty: Difficulty):
+        """ Get amount of cells to remove for the difficulty level
+
+        Keyword Arguments:
+            difficulty (Difficulty) -- The difficulty of the game.
+
+        Returns:
+            Returns the amount of cells to remove.
+        """
+        if difficulty == self.Difficulty.EASY:
+            remove = random.randint(20, 30)
+        elif difficulty == self.Difficulty.MEDIUM:
+            remove = random.randint(30, 40)
+        elif difficulty == self.Difficulty.HARD:
+            remove = random.randint(40, 50)
+        else:
+            remove = random.randint(50, 60)
+        return remove
 
     def _generate_board(self):
         """ Helper functiont hat will generate a board. It will make sure there is at least one
