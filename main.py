@@ -59,10 +59,9 @@ def brute_force():
     puzzle.pretty_print()
     puzzle.brute_force_solve()
     puzzle.pretty_print()
-def console_game():
+def console_game(puzzle):
     """ Basic console implmentation of the game
     """
-    puzzle = create_puzzle()
     while puzzle.solved():
 
         puzzle.pretty_print()
@@ -84,11 +83,12 @@ def generate_game():
     """ main function
     """
     puzzle = sudoku.Puzzle(9)
-    puzzle.generate_board()
-
+    puzzle.generate_board(puzzle.Difficulty.HARD)
+    return puzzle
 def main():
     """ main function
     """
-    generate_game()
+    puzzle = generate_game()
+    console_game(puzzle)
     #brute_force()
 main()

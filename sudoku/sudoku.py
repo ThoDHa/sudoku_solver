@@ -212,7 +212,7 @@ class Puzzle:
             output += f'{row}' + " "
 
         output += "\n  "
-        output += "-"*self.size*2
+        output += "-"*((self.size*2)-1)
         output += "\n"
 
         for row in range(1, self.size):
@@ -234,7 +234,7 @@ class Puzzle:
                 output += "\n"
                 output += "  "
 
-                output += "-"*self.size*2
+                output += "-"*((self.size*2)-1)
             output += "\n"
 
         output += "   "
@@ -249,14 +249,10 @@ class Puzzle:
         """
         while True:
             print("Generating a new board")
-            if not self._generate_board():
-                continue
+            self._generate_board()
             self.pretty_print()
             print("Generation of board done, brute force solving the rest.")
             assert self.validate(), ("The Board generated before brute force solving is not valid.")
-            for cell in self.board:
-                if cell[self.VALUE] != self.INVALID:
-                    cell[self.INITIAL] = True
             self.brute_force_solve()
             self.pretty_print()
             if self.find_empty():
@@ -268,15 +264,42 @@ class Puzzle:
             break
         if difficulty:
             pass
+
+        if difficulty == self.Difficulty.EASY:
+            remove = random.randint(20, 30)
+        elif difficulty == self.Difficulty.MEDIUM:
+            remove = random.randint(30, 40)
+        elif difficulty == self.Difficulty.HARD:
+            remove = random.randint(40, 50)
+        else:
+            remove = random.randint(50, 60)
+
+        for _ in range(1, remove):
+            while True:
+                row = random.randint(1, self.size-1)
+                column = random.randint(1, self.size-1)
+                value = self._get_cell(row, column)
+                if value != self.INVALID:
+                    self.fill(row, column, self.INVALID)
+                    break
+        for cell in self.board:
+            if cell[self.VALUE] != self.INVALID:
+                cell[self.INITIAL] = True
+
         print("WE GENERATED A VALID BOARD!")
 
     def _generate_board(self):
+        """ Helper functiont hat will generate a board. It will make sure there is at least one
+        value in each block, and will randomly add up to three.
+        """
+
         seed_value = random.randrange(sys.maxsize)
         random.seed(seed_value)
 
+        self.fill(1, 1, random.randint(1, self.size-1))
         for block in range(1, self.size):
             count = 0
-            max_count = random.randint(1,2)
+            max_count = random.randint(1,math.ceil((self.size-1)*.2))
             while count < max_count:
                 row = random.randint(1, self.size-1)
                 column = random.randint(1, self.size-1)
@@ -288,7 +311,6 @@ class Puzzle:
                             count = count + 1
                             continue
                         self.fill(row, column, self.INVALID)
-        return True
 
     def _set_cell(self, row: int, column: int, value: int, initial: bool = False):
         """This will fill in the cell sepcified with the value.
