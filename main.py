@@ -60,10 +60,13 @@ def brute_force():
     puzzle.pretty_print()
     puzzle.brute_force_solve()
     puzzle.pretty_print()
-def console_game(puzzle):
+def console_game():
     """ Basic console implmentation of the game
     """
-    while puzzle.solved():
+    puzzle = sudoku.Puzzle(9)
+    puzzle.generate_board(puzzle.Difficulty.EXTREME)
+
+    while True:
 
         puzzle.pretty_print()
         row = input("Input Row: ")
@@ -71,6 +74,8 @@ def console_game(puzzle):
         value = input("Input Value: ")
         puzzle.fill(int(row), int(column), int(value))
         valid = puzzle.validate()
+        if not puzzle.solved():
+            break
         clear()
         if not valid:
             print("Last Entry Was not a valid Entry")
@@ -84,7 +89,7 @@ def generate_game():
     """ main function
     """
     puzzle = sudoku.Puzzle(9)
-    puzzle.generate_board(puzzle.Difficulty.EXTREME)
+    puzzle.generate_board(puzzle.Difficulty.EASY)
     return puzzle
 
 def timing_test():
@@ -95,21 +100,28 @@ def timing_test():
     for _ in range(1, 100):
         first = datetime.datetime.now()
         puzzle = sudoku.Puzzle(9)
-        puzzle.generate_board(puzzle.Difficulty.EASY)
+        puzzle.generate_board(puzzle.Difficulty.EXTREME)
         now = datetime.datetime.now()
         delta = now-first
-        times.append(f"{delta.microseconds / 1000}ms")
+        generate = ((now-first).microseconds) /1000
         solutions.append(str(puzzle))
 
-    return times, solutions
+        first = datetime.datetime.now()
+        puzzle.brute_force_solve()
+        now = datetime.datetime.now()
+        solve = ((now-first).microseconds) /1000
+        times.append({"generate": f"{generate}ms", "solved": f"{solve}ms"})
+    times, solutions = timing_test()
+    print(times)
+
 
 
 
 def main():
     """ main function
     """
-    times, solutions = timing_test()
-    print(times)
-    #console_game(puzzle)
+    #timing_test()
+    console_game()
+    #puzzle = generate_game()
     #brute_force()
 main()

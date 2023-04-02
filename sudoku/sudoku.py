@@ -32,9 +32,13 @@ class Puzzle:
         HARD = 3
         EXTREME = 4
 
-    class States:
+    class States(Enum):
+        """ The current states of the game
+        """
+
         GENERATING = 1
         SOLVING = 2
+
     def __init__(self, size : int):
         """This is to initalize the class,
         
@@ -49,13 +53,14 @@ class Puzzle:
         for row in range(1, self.size):
             for column in range(1, self.size):
                 self.board.append(
-                        {self.ROW: row,
-                         self.COLUMN : column,
-                         self.VALUE: self.INVALID,
-                         self.HINTS: [],
-                         self.INITIAL: False
+                        {
+                            self.ROW: row,
+                            self.COLUMN : column,
+                            self.VALUE: self.INVALID,
+                            self.HINTS: [],
+                            self.INITIAL: False
                          }
-                        )
+                    )
 
     def fill(self, row: int, column: int, value: int, initial: bool = False):
         """This will fill in the cell sepcified with the value, Returns True if successfully set, 
@@ -251,6 +256,7 @@ class Puzzle:
             print("WE GENERATED A VALID BOARD!")
             self.state = self.States.SOLVING
             return
+
     def clear(self):
         """ Clear the board with the solutions.
         """
@@ -272,7 +278,7 @@ class Puzzle:
 
         for block in range(1, self.size):
             count = 0
-            max_count = random.randint(1,math.ceil((self.size-1)*.2))
+            max_count = random.randint(1,math.ceil((self.size-1)*.3))
 
             first_time = datetime.datetime.now()
             while count < max_count:
@@ -280,7 +286,6 @@ class Puzzle:
                 now = datetime.datetime.now()
                 difference = now - first_time
                 if (difference.total_seconds() * 1000) >= 500:
-                    print(str(difference.total_seconds() * 1000))
                     continue
 
                 row = random.randint(1, self.size-1)
@@ -479,12 +484,12 @@ class Puzzle:
             Returns the amount of cells to remove.
         """
         if difficulty == self.Difficulty.EASY:
-            remove = random.randint(20, 30)
+            remove = random.randint(45, 50)
         elif difficulty == self.Difficulty.MEDIUM:
-            remove = random.randint(30, 40)
+            remove = random.randint(50, 55)
         elif difficulty == self.Difficulty.HARD:
-            remove = random.randint(40, 50)
+            remove = random.randint(55, 60)
         else:
-            remove = random.randint(50, 60)
+            remove = random.randint(60, 65)
         return remove
 
