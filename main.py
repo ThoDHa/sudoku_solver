@@ -3,6 +3,7 @@
 import os
 import datetime
 from sudoku import sudoku
+from sudoku import driver 
 
 def clear():
     """ Clears the console
@@ -63,27 +64,15 @@ def brute_force():
 def console_game():
     """ Basic console implmentation of the game
     """
-    puzzle = sudoku.Puzzle(9)
-    puzzle.generate_board(puzzle.Difficulty.EXTREME)
+    game = driver.Game()
 
     while True:
-
-        puzzle.pretty_print()
+        game.print_game()
         row = input("Input Row: ")
         column = input("Input Column: ")
         value = input("Input Value: ")
-        puzzle.fill(int(row), int(column), int(value))
-        valid = puzzle.validate()
-        if not puzzle.solved():
-            break
+        game.add(int(row), int(column), int(value))
         clear()
-        if not valid:
-            print("Last Entry Was not a valid Entry")
-            puzzle.fill(int(row), int(column), puzzle.INVALID)
-        else:
-            print("")
-    input("Congrats you beat the game!")
-    puzzle.pretty_print()
 
 def generate_game():
     """ main function
@@ -111,8 +100,6 @@ def timing_test():
         now = datetime.datetime.now()
         solve = ((now-first).microseconds) /1000
         times.append({"generate": f"{generate}ms", "solved": f"{solve}ms"})
-    times, solutions = timing_test()
-    print(times)
 
 
 

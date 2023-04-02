@@ -2,7 +2,7 @@
 This is the basic driver for the sudoku puzzle
 """
 import json
-from sudoku import Puzzle as sudoku
+from .sudoku import Puzzle
 
 class Move:
     """ THe list of moves, so we can keep track of the moves tried.
@@ -22,6 +22,7 @@ class Move:
         self.value = value
         self.add = add
         self.notes = notes
+
 class Game:
     """ The basic driver for the game of sudoku puzzle.
     """
@@ -29,8 +30,8 @@ class Game:
     def __init__(self):
         """ Initialize the game.
         """
-        self.puzzle = sudoku(9)
-        self.puzzle.generate_board(sudoku.Difficulty.EXTREME)
+        self.puzzle = Puzzle(9)
+        self.puzzle.generate_board(Puzzle.Difficulty.EXTREME)
         self.moves = []
 
     def print_game(self):
@@ -38,19 +39,12 @@ class Game:
         """
         self.puzzle.pretty_print()
 
-    def remove(self, row: int, column: int, value: int):
+    def remove(self, row: int, column: int):
         """ Add a value to a cell. 
         K,eyword Agurments:
             row (int) -- the column of the cell to get the hints for.
 
             column (int) -- the row of the cell to get the hints for.
-
-            value (int) -- the value of the the cell to add.
-
-            verify (bool) -- to validate the value of the cell (default false).
-
-        Returns:
-            True always if verify is false, otherwise return the value from the verify.
         """
         self.puzzle.fill(row, column, self.puzzle.INVALID)
         self.moves.append(Move(row, column, self.puzzle.INVALID, add=False))
