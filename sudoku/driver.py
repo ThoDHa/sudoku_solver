@@ -1,7 +1,6 @@
 """driver.py
 This is the basic driver for the sudoku puzzle
 """
-import json
 from .sudoku import Puzzle
 
 class Move:
@@ -35,22 +34,20 @@ class Game:
         self.moves = []
 
     def print_game(self):
-        """ Initialize the game.
+        """ Print the game 
         """
         self.puzzle.pretty_print()
+    def validate(self)->bool:
+        """ Validate the current state of the game
 
-    def remove(self, row: int, column: int):
-        """ Add a value to a cell. 
-        K,eyword Agurments:
-            row (int) -- the column of the cell to get the hints for.
-
-            column (int) -- the row of the cell to get the hints for.
+        Return:
+            True if the game is valid, false if invalid.
         """
-        self.puzzle.fill(row, column, self.puzzle.INVALID)
-        self.moves.append(Move(row, column, self.puzzle.INVALID, add=False))
+        return self.puzzle.validate()
 
     def add(self, row: int, column: int, value: int, verify: bool = False):
-        """ Add a value to a cell. 
+        """ Add a value to a cell.
+
         Keyword Agurments:
             row (int) -- the column of the cell to get the hints for.
 
@@ -69,7 +66,44 @@ class Game:
             return self.puzzle.validate()
         return True
 
-    def __str__(self):
-        """ Tells stuff how to convert this class to a string 
+    def remove(self, row: int, column: int):
+        """ Add a value to a cell. 
+        Keyword Agurments:
+            row (int) -- the column of the cell to get the hints for.
+
+            column (int) -- the row of the cell to get the hints for.
         """
-        return json.dumps(self.puzzle, ensure_ascii=False)
+        self.puzzle.fill(row, column, self.puzzle.INVALID)
+        self.moves.append(Move(row, column, self.puzzle.INVALID, add=False))
+
+    def notes_add(self, row: int, column: int, value: int):
+        """ Add the hints to a cell. 
+        Keyword Agurments:
+            row (int) -- the column of the cell to add the hints for.
+
+            column (int) -- the row of the cell to add the hints for.
+            
+            value (int) -- the row of the cell to add the hints for.
+        """
+        return self.puzzle.add_hint(row, column, value)
+
+    def notes_remove(self, row: int, column: int, value: int):
+        """ Remove the hints from a cell. 
+        Keyword Agurments:
+            row (int) -- the column of the cell to remove the hints for.
+
+            column (int) -- the row of the cell to remove the hints for.
+            
+            value (int) -- the row of the cell to remove the hints for.
+        """
+        return self.puzzle.remove_hint(row, column, value)
+
+    def notes_get(self, row: int, column: int):
+        """ Get the hints to a cell. 
+        Keyword Agurments:
+            row (int) -- the column of the cell to get the hints for.
+
+            column (int) -- the row of the cell to get the hints for.
+            
+        """
+        return self.puzzle.get_hints(row, column)

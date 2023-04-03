@@ -8,6 +8,7 @@ import math
 from enum import Enum
 import random
 import datetime
+
 def clear():
     """ Clears the console
     """
@@ -77,7 +78,7 @@ class Puzzle:
         assert 0 < value <= self.size or value == -1, "invalid value"
         return self._set_cell(row, column, value, initial)
 
-    def add_hint(self, row: int, column: int, value: int) -> bool:
+    def add_hint(self, row: int, column: int, value: int):
         """ Add hints to the cell.
         Keyword Arugments:
             row (int): The row of the cell to set.
@@ -87,7 +88,7 @@ class Puzzle:
             value (int): The value to set for the cell. Starter cells cannot be deleted
 
         Return:
-            True if adding the hint is successful, False otherwise.
+            Return the hints of the cell. 
         """
         assert 0 < row <= self.size, "invalid row value"
         assert 0 < column <= self.size, "invalid column value"
@@ -97,8 +98,7 @@ class Puzzle:
         if cell[self.VALUE] == self.INVALID and cell[self.INITIAL] is False:
             if value not in cell[self.HINTS]:
                 cell[self.HINTS].append(value)
-            return True
-        return False
+        return self.get_hints(row, column)
 
     def remove_hint(self, row: int, column: int, value: int) -> bool:
         """ Remove hint from a cell.
@@ -365,17 +365,10 @@ class Puzzle:
 
         for cell in self.board:
             if cell[self.ROW] == row and cell[self.COLUMN] == column:
+                # If the cell is not a initial cell then we can overwrite it.
                 if not cell[self.INITIAL]:
-                    # IF we are setting it to invalid then just go ahead and set it.
-                    if value == self.INVALID:
-                        cell[self.VALUE] = value
-                        cell[self.INITIAL] = initial
-                    # If the value is not invalid then we can set it.
-                    elif cell[self.VALUE] == self.INVALID:
-                        cell[self.VALUE] = value
-                        cell[self.INITIAL] = initial
-                    else:
-                        return False
+                    cell[self.VALUE] = value
+                    cell[self.INITIAL] = initial
                     return True
                 return False
 
